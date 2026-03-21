@@ -1,0 +1,74 @@
+# -------------------
+# 🐍 Python
+# -------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# virtual environment
+venv/
+.env/
+.env.*
+
+# -------------------
+# 🔐 Environment variables
+# -------------------
+.env
+*.env
+
+# -------------------
+# 🧠 Vector DB (Chroma)
+# -------------------
+chroma/
+db/
+*.sqlite3
+
+# -------------------
+# 📂 Temporary files
+# -------------------
+_temp/
+temp/
+uploads/
+
+# -------------------
+# 📄 Logs
+# -------------------
+*.log
+
+# -------------------
+# 💻 VSCode
+# -------------------
+.vscode/
+
+# -------------------
+# 🧪 Testing / cache
+# -------------------
+.pytest_cache/
+.coverage
+htmlcov/
+
+# -------------------
+# 📦 Build / dist
+# -------------------
+build/
+dist/
+*.egg-info/
+
+# -------------------
+# 🖥️ OS files
+# -------------------
+.DS_Store
+Thumbs.db
+
+# -------------------
+# 🧠 Models
+# -------------------
+*.gguf
+*.bin
+*.pt
+*.onnx
+
+# -------------------
+# 📄 Data 
+# -------------------
+data/
