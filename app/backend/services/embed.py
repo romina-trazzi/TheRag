@@ -116,6 +116,8 @@ def save_file(file):
 def list_uploaded_files():
     db = get_vector_db()
     data = db.get(include=["metadatas"])
+    
+    print(data)
 
     files = {}
 
@@ -164,5 +166,18 @@ def list_chunks_by_file_hash(file_hash: str):
         })
 
     return chunks
+
+# Funzione per cancellare i file dal database vettoriale tramite file_hash
+def delete_file_by_hash(file_hash: str):
+    if not file_hash:
+        return False
+
+    db = get_vector_db()
+
+    db.delete(
+        where={"file_hash": file_hash}
+    )
+
+    return True
 
 

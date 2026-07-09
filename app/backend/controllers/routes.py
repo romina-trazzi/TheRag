@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 
 from app.backend.services.query import query
-from app.backend.services.embed import embed, save_file, list_uploaded_files, list_chunks_by_file_hash
+from app.backend.services.embed import embed, save_file, list_uploaded_files, list_chunks_by_file_hash, delete_file_by_hash
 
 router = Blueprint("router", __name__)
 
@@ -61,6 +61,28 @@ def route_files():
         "count": len(files),
         "files": files
     }), 200
+
+# Route per cancellare un file specifico tramite il suo hash
+@router.route("/files", methods=["DELETE"])
+def route_delete_file():
+    file_hash = request.args.get("file_hash")
+
+    if not file_hash:
+        return jsonify({
+            "error": "Parametro 'file_hash' mancante"
+        }), 400
+
+    deleted = delete_file_by_hash(file_hash)
+
+    if deleted:
+        return jsonify({
+            "message": "Documento eliminato con successo.",
+            "file_hash": file_hash
+        }), 200
+
+    return jsonify({
+        "error": "Impossibile eliminare il documento."
+    }), 400
 
 # Route per ottenere la lista dei chunk di un file specifico tramite il suo hash
 @router.route("/chunks", methods=["GET"])
