@@ -52,4 +52,7 @@ https://www.youtube.com/watch?v=b7-IV7IS5YI
 https://www.youtube.com/watch?v=S6ZdlvSCzUw
 https://www.youtube.com/watch?v=SSc_OVJli4Q
 
+### Altre pagine di documentazione utili
+
+https://www.starfounder.it/data/
 

@@ -1,66 +1,84 @@
-import os
-from flask import Blueprint, request, jsonify
-from app.backend.config.config_folder import TEMP_FOLDER
+from flask import Blueprint, request, jsonify, send_from_directory
+
 from app.backend.services.query import query
-from app.backend.services.embed import embed
-from app.backend.services.embed import list_uploaded_files
-from flask import send_from_directory
+from app.backend.services.embed import embed, save_file, list_uploaded_files, list_chunks_by_file_hash
 
 router = Blueprint("router", __name__)
 
 
+# Route per la home page
+@router.route("/", methods=["GET"])
+def frontend():
+    return send_from_directory("app/frontend", "index.html")
+
 # Route per l'embedding dei file + gestione degli errori
-@router.route('/embed', methods=['POST'])
+@router.route("/embed", methods=["POST"])
 def route_embed():
-    if 'file' not in request.files:
+    if "file" not in request.files:
         return jsonify({"error": "Nessuna parte del file"}), 400
 
-    file = request.files['file']
+    file = request.files["file"]
 
-    if file.filename == '':
+    if file.filename == "":
         return jsonify({"error": "Nessun file selezionato"}), 400
-    
-    
-    # Salvataggio del file in una cartella temporanea
-    file_path = os.path.join(TEMP_FOLDER, str(file.filename))
-    file.save(file_path)
 
-    # Embedding del file (= trasformazione del file in un vettore numerico) e salvataggio nel vector database
+    file_path = save_file(file)
     embedded = embed(file_path)
 
     if embedded:
-        return jsonify({"message": "File caricato con successo nel vector database"}), 200
+        return jsonify({
+            "message": "File caricato con successo nel vector database"
+        }), 200
 
-    return jsonify({"error": "Caricamento del file non riuscito"}), 400
+    return jsonify({
+        "error": "Caricamento del file non riuscito"
+    }), 400
 
 # Route per la query dell'utente
-@router.route('/query', methods=['POST'])
+@router.route("/query", methods=["POST"])
 def route_query():
-    
-    # Query dell'utente trasformata in JSON
     data = request.get_json()
-    
-    # Estrazione del valore associato alla chiave "query" dal JSON ricevuto 
-    # che viene passato alla funzione query(...) del file query.py
-    response = query(data.get('query'))
 
-    # Risposta del RAG model
+    if not data or not data.get("query"):
+        return jsonify({"error": "Query mancante"}), 400
+
+    response = query(data.get("query"))
+
     if response:
-           return jsonify({
+        return jsonify({
             "answer": response.get("answer"),
             "sources": response.get("sources")
-    }), 200
-            
-    # Risposta di errore
+        }), 200
+
     return jsonify({"error": "Qualcosa è andato storto"}), 400
 
-# Route per la lista dei file caricati nel database vettoriale
-@router.route('/files', methods=['GET'])
+# Route per ottenere la lista dei file caricati nel database vettoriale
+@router.route("/files", methods=["GET"])
 def route_files():
     files = list_uploaded_files()
-    return jsonify({"files": files}), 200
 
-# Route per la home page
-@router.route('/', methods=['GET'])
-def frontend():
-    return send_from_directory("app/frontend", "index.html")
+    return jsonify({
+        "count": len(files),
+        "files": files
+    }), 200
+
+# Route per ottenere la lista dei chunk di un file specifico tramite il suo hash
+@router.route("/chunks", methods=["GET"])
+def route_chunks():
+    file_hash = request.args.get("file_hash")
+
+    if not file_hash:
+        return jsonify({
+            "error": "Parametro file_hash mancante"
+        }), 400
+
+    chunks = list_chunks_by_file_hash(file_hash)
+
+    return jsonify({
+        "file_hash": file_hash,
+        "chunks_count": len(chunks),
+        "chunks": chunks
+    }), 200
+
+
+

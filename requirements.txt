@@ -11,8 +11,10 @@ docx2txt
 flask
 tqdm
 scikit-learn
+umap-learn
 plotly
 pandas
+numpy
 
 
 
