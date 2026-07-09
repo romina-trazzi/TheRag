@@ -5,11 +5,24 @@ from app.backend.services.embed import embed, save_file, list_uploaded_files, li
 
 router = Blueprint("router", __name__)
 
+# ROUTES PER IL FRONTEND #
 
 # Route per la home page
 @router.route("/", methods=["GET"])
 def frontend():
     return send_from_directory("app/frontend", "index.html")
+
+@router.route("/static/css/<path:filename>")
+def serve_css(filename):
+    return send_from_directory("app/frontend/css", filename)
+
+
+@router.route("/static/js/<path:filename>")
+def serve_js(filename):
+    return send_from_directory("app/frontend/js", filename)
+
+
+# ROUTES PER IL BACKEND #
 
 # Route per l'embedding dei file + gestione degli errori
 @router.route("/embed", methods=["POST"])

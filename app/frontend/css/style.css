@@ -1,0 +1,74 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f4f5;
+    color: #222;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+header {
+    margin-bottom: 24px;
+}
+
+header h1 {
+    margin-bottom: 4px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #222;
+    color: white;
+    margin-top: 8px;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    resize: vertical;
+}
+
+pre {
+    background: #111;
+    color: #eee;
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+.file-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 10px;
+    background: #fafafa;
+}
+
+.file-actions {
+    margin-top: 8px;
+}
+
+.file-actions button {
+    margin-right: 8px;
+}

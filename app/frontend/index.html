@@ -1,50 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
     <head>
+        <meta charset="UTF-8">
         <title>TheRAG</title>
+        <link rel="stylesheet" href="/static/css/style.css">
     </head>
-    
+
     <body>
-        <h1>TheRAG</h1>
+        <main class="container">
+            <header>
+                <h1>TheRAG</h1>
+                <p>RAG pratico + inspector teorico</p>
+            </header>
 
-        <h2>Carica documento</h2>
-        <input type="file" id="fileInput">
-        <button onclick="uploadFile()">Embed</button>
+            <section class="card">
+                <h2>Carica documento</h2>
+                <input type="file" id="fileInput">
+                <button onclick="uploadFile()">Embed</button>
+                <pre id="uploadResult"></pre>
+            </section>
 
-        <h2>Fai una domanda</h2>
-        <textarea id="queryInput"></textarea>
-        <button onclick="askQuestion()">Chiedi</button>
+            <section class="card">
+                <h2>Documenti nel Vector DB</h2>
+                <button onclick="loadFiles()">Aggiorna lista</button>
+                <div id="filesList"></div>
+            </section>
 
-        <h2>Risposta</h2>
-        <pre id="answer"></pre>
+            <section class="card">
+                <h2>Chunks documento</h2>
+                <pre id="chunksOutput">Seleziona “Vedi chunk” da un documento.</pre>
+            </section>
 
-        <script>
-            async function uploadFile() {
-            const file = document.getElementById("fileInput").files[0];
-            const formData = new FormData();
-            formData.append("file", file);
+            <section class="card">
+                <h2>Fai una domanda</h2>
+                <textarea id="queryInput" placeholder="Scrivi una domanda sui documenti..."></textarea>
+                <button onclick="askQuestion()">Chiedi</button>
+            </section>
 
-            const res = await fetch("/embed", {
-                method: "POST",
-                body: formData
-            });
+            <section class="card">
+                <h2>Risposta</h2>
+                <pre id="answer"></pre>
+            </section>
+        </main>
 
-            document.getElementById("answer").textContent = JSON.stringify(await res.json(), null, 2);
-            }
-
-            async function askQuestion() {
-            const query = document.getElementById("queryInput").value;
-
-            const res = await fetch("/query", {
-                method: "POST",
-                headers: {
-                "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ query })
-            });
-
-            document.getElementById("answer").textContent = JSON.stringify(await res.json(), null, 2);
-            }
-        </script>
+        <script src="/static/js/index.js"></script>
     </body>
 </html>
