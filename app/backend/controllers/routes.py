@@ -12,6 +12,14 @@ router = Blueprint("router", __name__)
 def frontend():
     return send_from_directory("app/frontend", "index.html")
 
+@router.route("/embedding-page", methods=["GET"])
+def embedding_page():
+    return send_from_directory("app/frontend", "embedding.html")
+
+@router.route("/analytics-page", methods=["GET"])
+def analytics_page():
+    return send_from_directory("app/frontend", "analytics.html")
+
 @router.route("/static/css/<path:filename>")
 def serve_css(filename):
     return send_from_directory("app/frontend/css", filename)

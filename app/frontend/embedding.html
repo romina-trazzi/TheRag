@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="it">
+    <head>
+        <meta charset="UTF-8">
+        <title>RAG - Embedding</title>
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body>
+
+    <nav class="navbar">
+        <div class="navbar-brand">Mini RAG</div>
+
+        <div class="navbar-links">
+            <a href="/">RAG</a>
+            <a href="/embedding-page">Embedding</a>
+            <a href="/analytics-page">Analytics</a>
+        </div>
+    </nav>
+
+    <main class="page-container">
+
+        <section class="page-header">
+            <h1>Embedding</h1>
+            <p>Gestisci i documenti caricati nella knowledge base.</p>
+        </section>
+
+        <section class="card">
+            <h2>Carica documento</h2>
+
+            <input type="file" id="fileInput">
+
+            <button id="uploadButton">Carica e indicizza</button>
+
+            <div id="uploadStatus" class="status-box"></div>
+        </section>
+
+        <section class="card">
+            <div class="section-title-row">
+                <h2>Documenti caricati</h2>
+                <button id="refreshFilesButton" class="secondary-button">Aggiorna</button>
+            </div>
+
+            <div id="filesBox" class="files-box"></div>
+        </section>
+
+        <section class="card">
+            <h2>Chunk del documento</h2>
+            <p class="muted">Seleziona un documento per vedere i chunk associati.</p>
+
+            <div id="chunksBox" class="chunks-box"></div>
+        </section>
+
+    </main>
+    
+    <script src="/js/common.js"></script>
+    <script src="/js/embedding.js"></script>
+    </body>
+</html>

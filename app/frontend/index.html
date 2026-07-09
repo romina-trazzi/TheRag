@@ -2,60 +2,53 @@
 <html lang="it">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>TheRAG</title>
-
+        <title>RAG - Query</title>
         <link rel="stylesheet" href="/static/css/style.css">
     </head>
     <body>
-        <main class="container">
-            <header class="header">
-                <h1>TheRAG</h1>
-                <p>RAG pratico + inspector teorico</p>
-            </header>
 
-            <section class="card">
-                <h2>Carica documento</h2>
+    <nav class="navbar">
+        <div class="navbar-brand">RAG</div>
 
-                <input type="file" id="fileInput" accept=".pdf,.txt,.docx">
-                <button type="button" id="uploadButton">Embed</button>
+        <div class="navbar-links">
+            <a href="/">RAG</a>
+            <a href="/embedding-page">Embedding</a>
+            <a href="/analytics-page">Analytics</a>
+        </div>
+    </nav>
 
-                <pre id="uploadResult"></pre>
-            </section>
+    <main class="page-container">
 
-            <section class="card">
-                <h2>Documenti nel Vector DB</h2>
+        <section class="page-header">
+            <h1>RAG</h1>
+            <p>Fai una domanda alla knowledge base.</p>
+        </section>
 
-                <button type="button" id="refreshFilesButton">Aggiorna lista</button>
+        <section class="card">
+            <label for="questionInput">Domanda</label>
 
-                <div id="filesList"></div>
-            </section>
+            <textarea 
+                id="questionInput" 
+                placeholder="Scrivi qui la tua domanda..."
+                rows="6"></textarea>
 
-            <section class="card">
-                <h2>Chunk documento</h2>
+            <button id="askButton">Chiedi</button>
+        </section>
 
-                <pre id="chunksOutput">Seleziona “Vedi chunk” da un documento.</pre>
-            </section>
+        <section class="card">
+            <h2>Risposta</h2>
+            <div id="loadingMessage" class="hidden">Sto generando una risposta...</div>
+            <div id="answerBox" class="answer-box"></div>
+        </section>
 
-            <section class="card">
-                <h2>Fai una domanda</h2>
+        <section class="card">
+            <h2>Fonti recuperate</h2>
+            <div id="sourcesBox" class="sources-box"></div>
+        </section>
 
-                <textarea
-                    id="queryInput"
-                    placeholder="Scrivi una domanda sui documenti caricati..."
-                    rows="5"
-                ></textarea>
+    </main>
 
-                <button type="button" id="queryButton">Chiedi</button>
-            </section>
-
-            <section class="card">
-                <h2>Risposta</h2>
-
-                <pre id="answer"></pre>
-            </section>
-        </main>
-
-        <script src="/static/js/index.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/rag.js"></script>
     </body>
 </html>
