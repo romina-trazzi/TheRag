@@ -24,7 +24,7 @@ python main.py
 
 Aprendo un nuovo terminale Bash su VsCode:
 
-curl.exe -X POST "http://localhost:8080/embed" -F "file=@app/backend/data/Per vetri.docx"
+curl.exe -X POST "http://localhost:8080/embed" -F "file=@app/backend/data/Per Vetri.docx"
 
 curl --request POST \
   --url http://localhost:8080/embed \
