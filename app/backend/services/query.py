@@ -4,10 +4,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from app.backend.db.vector_db import get_vector_db
 
-
 # Chiamare la funzione da get_vector_db.py per ottenere l'oggetto DB
 db = get_vector_db()
-
 
 # Funzione di Initial prompt (= template prompt con blocchi di contesto e domanda)
 def get_prompt():
@@ -77,5 +75,3 @@ def query(input_text):
         "answer": str(response),
         "sources": sources
     }
-    
-  

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TheRAG</title>
+    </head>
+    
+    <body>
+        <h1>TheRAG</h1>
+
+        <h2>Carica documento</h2>
+        <input type="file" id="fileInput">
+        <button onclick="uploadFile()">Embed</button>
+
+        <h2>Fai una domanda</h2>
+        <textarea id="queryInput"></textarea>
+        <button onclick="askQuestion()">Chiedi</button>
+
+        <h2>Risposta</h2>
+        <pre id="answer"></pre>
+
+        <script>
+            async function uploadFile() {
+            const file = document.getElementById("fileInput").files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await fetch("/embed", {
+                method: "POST",
+                body: formData
+            });
+
+            document.getElementById("answer").textContent = JSON.stringify(await res.json(), null, 2);
+            }
+
+            async function askQuestion() {
+            const query = document.getElementById("queryInput").value;
+
+            const res = await fetch("/query", {
+                method: "POST",
+                headers: {
+                "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ query })
+            });
+
+            document.getElementById("answer").textContent = JSON.stringify(await res.json(), null, 2);
+            }
+        </script>
+    </body>
+</html>

@@ -10,6 +10,10 @@ python-dotenv
 docx2txt
 flask
 tqdm
+scikit-learn
+plotly
+pandas
+
 
 
 

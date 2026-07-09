@@ -3,6 +3,8 @@ from flask import Blueprint, request, jsonify
 from app.backend.config.config_folder import TEMP_FOLDER
 from app.backend.services.query import query
 from app.backend.services.embed import embed
+from app.backend.services.embed import list_uploaded_files
+from flask import send_from_directory
 
 router = Blueprint("router", __name__)
 
@@ -31,8 +33,6 @@ def route_embed():
 
     return jsonify({"error": "Caricamento del file non riuscito"}), 400
 
-
-
 # Route per la query dell'utente
 @router.route('/query', methods=['POST'])
 def route_query():
@@ -54,5 +54,13 @@ def route_query():
     # Risposta di errore
     return jsonify({"error": "Qualcosa è andato storto"}), 400
 
+# Route per la lista dei file caricati nel database vettoriale
+@router.route('/files', methods=['GET'])
+def route_files():
+    files = list_uploaded_files()
+    return jsonify({"files": files}), 200
 
-
+# Route per la home page
+@router.route('/', methods=['GET'])
+def frontend():
+    return send_from_directory("app/frontend", "index.html")
