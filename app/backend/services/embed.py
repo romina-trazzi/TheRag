@@ -1,13 +1,10 @@
 import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
-
 from langchain_community.document_loaders import (PyPDFLoader, TextLoader, Docx2txtLoader)
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from get_vector_db import get_vector_db
-
-TEMP_FOLDER = os.getenv('TEMP_FOLDER', './_temp')
-os.makedirs(TEMP_FOLDER, exist_ok=True)
+from app.backend.db.vector_db import get_vector_db
+from app.backend.config.config_folder import TEMP_FOLDER
 
 
 # Funzione per caricare, processare e inserire i documenti nel database vettoriale

@@ -10,3 +10,6 @@ python-dotenv
 docx2txt
 flask
 tqdm
+
+
+

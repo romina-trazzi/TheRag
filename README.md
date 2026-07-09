@@ -18,11 +18,13 @@ ollama run qwen3
 
 Su terminale Powershell, nella cartella del progetto:
 
-python app.py
+python main.py
 
 ### Per embeddare nuovi documenti
 
-curl.exe -X POST http://localhost:8080/embed -F "file=@data/Per vetri.docx"
+Aprendo un nuovo terminale Bash su VsCode:
+
+curl.exe -X POST "http://localhost:8080/embed" -F "file=@app/backend/data/Per vetri.docx"
 
 curl --request POST \
   --url http://localhost:8080/embed \
@@ -32,12 +34,12 @@ curl --request POST \
 
 ### Per interrogare il modello
 
-Su terminale Bash:
+Aprendo un nuovo terminale Bash su VsCode:
 
 curl --request POST \
   --url http://localhost:8080/query \
   --header 'Content-Type: application/json' \
-  --data '{ "query": "Di cosa parla il documento dei disinfettanti?" }'
+  --data '{ "query": "Di cosa parla il documento dei vetri?" }'
 
 
 #### Esercizio di base preso qui: 
@@ -45,4 +47,9 @@ curl --request POST \
 https://massimilianovurro.com/come-creare-una-rag-app-gratis-sul-tuo-computer-in-10-minuti/
 
 #### Video Youtube utili:
+
+https://www.youtube.com/watch?v=b7-IV7IS5YI
+https://www.youtube.com/watch?v=S6ZdlvSCzUw
+https://www.youtube.com/watch?v=SSc_OVJli4Q
+
 

@@ -2,14 +2,14 @@ from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-from get_vector_db import get_vector_db
+from app.backend.db.vector_db import get_vector_db
 
 
 # Chiamare la funzione da get_vector_db.py per ottenere l'oggetto DB
 db = get_vector_db()
 
 
-# Funzione di Initial prompt \ template prompt con blocchi di contesto e domanda
+# Funzione di Initial prompt (= template prompt con blocchi di contesto e domanda)
 def get_prompt():
     template = """Rispondi alla domanda SOLO usando il contesto fornito.
                 Regole:
@@ -53,7 +53,7 @@ def query(input_text):
         temperature=0.3,
     )
 
-    # Fase 3: Chain che collega il retriever, il prompt e l'LLM, con output parser per formattare la risposta
+    # Fase 4: Chain che collega il retriever, il prompt e l'LLM, con output parser per formattare la risposta
     chain = (
         {"context": retriever, "question": RunnablePassthrough()}
         | prompt
@@ -61,7 +61,7 @@ def query(input_text):
         | StrOutputParser()
     )
 
-    # Esegui per ottenere la risposta formattata
+    # Esegui la chain per ottenere la risposta formattata
     response = chain.invoke(input_text)
     
 

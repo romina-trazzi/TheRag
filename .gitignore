@@ -7,14 +7,16 @@ __pycache__/
 
 # virtual environment
 venv/
-.env/
-.env.*
+.venv/
 
+.
 # -------------------
 # 🔐 Environment variables
 # -------------------
 .env
+.env/
 *.env
+.env.*
 
 # -------------------
 # 🧠 Vector DB (Chroma)
@@ -69,6 +71,6 @@ Thumbs.db
 *.onnx
 
 # -------------------
-# 📄 Data 
+# 📄 Data (solo se NON vuoi versionare i documenti)
 # -------------------
 data/
