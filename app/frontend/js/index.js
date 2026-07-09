@@ -1,112 +1,286 @@
+document.addEventListener("DOMContentLoaded", () => {
+    bindEvents();
+    loadFiles();
+});
+
+
+function bindEvents() {
+    const uploadButton = document.getElementById("uploadButton");
+    const queryButton = document.getElementById("queryButton");
+    const refreshFilesButton = document.getElementById("refreshFilesButton");
+
+    if (uploadButton) {
+        uploadButton.addEventListener("click", uploadFile);
+    }
+
+    if (queryButton) {
+        queryButton.addEventListener("click", askQuestion);
+    }
+
+    if (refreshFilesButton) {
+        refreshFilesButton.addEventListener("click", loadFiles);
+    }
+}
+
+
+async function apiRequest(url, options = {}) {
+    try {
+        const response = await fetch(url, options);
+
+        let data = null;
+
+        try {
+            data = await response.json();
+        } catch {
+            data = null;
+        }
+
+        if (!response.ok) {
+            const message = data?.error || `Errore HTTP ${response.status}`;
+            throw new Error(message);
+        }
+
+        return data;
+    } catch (error) {
+        console.error("Errore richiesta API:", error);
+        throw error;
+    }
+}
+
+
 async function uploadFile() {
-    const file = document.getElementById("fileInput").files[0];
+    const fileInput = document.getElementById("fileInput");
+    const uploadResult = document.getElementById("uploadResult");
+
+    if (!fileInput || !uploadResult) return;
+
+    const file = fileInput.files[0];
 
     if (!file) {
-        alert("Seleziona un file.");
+        showMessage(uploadResult, "Seleziona un file prima di caricare.", true);
+        return;
+    }
+
+    const allowedExtensions = [".pdf", ".txt", ".docx"];
+    const fileName = file.name.toLowerCase();
+
+    const isValidFile = allowedExtensions.some(ext => fileName.endsWith(ext));
+
+    if (!isValidFile) {
+        showMessage(
+            uploadResult,
+            "Formato non supportato. Usa PDF, TXT o DOCX.",
+            true
+        );
         return;
     }
 
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("/embed", {
-        method: "POST",
-        body: formData
-    });
+    try {
+        showMessage(uploadResult, "Caricamento ed embedding in corso...");
 
-    const data = await res.json();
+        const data = await apiRequest("/embed", {
+            method: "POST",
+            body: formData
+        });
 
-    document.getElementById("uploadResult").textContent =
-        JSON.stringify(data, null, 2);
+        showJson(uploadResult, data);
+        fileInput.value = "";
 
-    await loadFiles();
+        await loadFiles();
+    } catch (error) {
+        showMessage(uploadResult, error.message, true);
+    }
 }
 
 
 async function askQuestion() {
-    const query = document.getElementById("queryInput").value;
+    const queryInput = document.getElementById("queryInput");
+    const answerOutput = document.getElementById("answer");
 
-    if (!query.trim()) {
-        alert("Scrivi una domanda.");
+    if (!queryInput || !answerOutput) return;
+
+    const query = queryInput.value.trim();
+
+    if (!query) {
+        showMessage(answerOutput, "Scrivi una domanda prima di inviare.", true);
         return;
     }
 
-    const res = await fetch("/query", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ query })
-    });
+    if (query.length < 3) {
+        showMessage(answerOutput, "La domanda è troppo corta.", true);
+        return;
+    }
 
-    const data = await res.json();
+    try {
+        showMessage(answerOutput, "Sto generando la risposta...");
 
-    document.getElementById("answer").textContent =
-        JSON.stringify(data, null, 2);
+        const data = await apiRequest("/query", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ query })
+        });
+
+        showJson(answerOutput, data);
+    } catch (error) {
+        showMessage(answerOutput, error.message, true);
+    }
 }
 
 
 async function loadFiles() {
-    const res = await fetch("/files");
-    const data = await res.json();
+    const filesList = document.getElementById("filesList");
 
-    const container = document.getElementById("filesList");
-    container.innerHTML = "";
+    if (!filesList) return;
 
-    if (!data.files || data.files.length === 0) {
-        container.innerHTML = "<p>Nessun documento caricato.</p>";
+    try {
+        filesList.innerHTML = "<p>Caricamento documenti...</p>";
+
+        const data = await apiRequest("/files");
+
+        renderFiles(data.files || []);
+    } catch (error) {
+        filesList.innerHTML = `<p class="error">${escapeHtml(error.message)}</p>`;
+    }
+}
+
+
+function renderFiles(files) {
+    const filesList = document.getElementById("filesList");
+
+    if (!filesList) return;
+
+    filesList.innerHTML = "";
+
+    if (!files.length) {
+        filesList.innerHTML = "<p>Nessun documento caricato.</p>";
         return;
     }
 
-    data.files.forEach(file => {
-        const div = document.createElement("div");
-        div.className = "file-item";
+    files.forEach(file => {
+        const item = document.createElement("div");
+        item.className = "file-item";
 
-        div.innerHTML = `
-            <strong>${file.file_name}</strong><br>
-            Hash: <code>${file.file_hash}</code><br>
-            Chunks: ${file.chunks}<br>
-            Upload: ${file.uploaded_at || "n/d"}
+        item.innerHTML = `
+            <strong>${escapeHtml(file.file_name || "Senza nome")}</strong>
+            <p><strong>Hash:</strong> <code>${escapeHtml(file.file_hash || "")}</code></p>
+            <p><strong>Chunks:</strong> ${file.chunks ?? 0}</p>
+            <p><strong>Upload:</strong> ${escapeHtml(file.uploaded_at || "n/d")}</p>
 
             <div class="file-actions">
-                <button onclick="loadChunks('${file.file_hash}')">Vedi chunk</button>
-                <button onclick="deleteFile('${file.file_hash}')">Elimina</button>
+                <button type="button" class="chunks-button">Vedi chunk</button>
+                <button type="button" class="delete-button">Elimina</button>
             </div>
         `;
 
-        container.appendChild(div);
+        const chunksButton = item.querySelector(".chunks-button");
+        const deleteButton = item.querySelector(".delete-button");
+
+        chunksButton.addEventListener("click", () => {
+            loadChunks(file.file_hash);
+        });
+
+        deleteButton.addEventListener("click", () => {
+            deleteFile(file.file_hash, file.file_name);
+        });
+
+        filesList.appendChild(item);
     });
 }
 
 
 async function loadChunks(fileHash) {
-    const res = await fetch(`/chunks?file_hash=${encodeURIComponent(fileHash)}`);
-    const data = await res.json();
+    const chunksOutput = document.getElementById("chunksOutput");
 
-    document.getElementById("chunksOutput").textContent =
-        JSON.stringify(data, null, 2);
+    if (!chunksOutput) return;
+
+    if (!fileHash) {
+        showMessage(chunksOutput, "Hash del file mancante.", true);
+        return;
+    }
+
+    try {
+        showMessage(chunksOutput, "Caricamento chunk...");
+
+        const data = await apiRequest(
+            `/chunks?file_hash=${encodeURIComponent(fileHash)}`
+        );
+
+        showJson(chunksOutput, data);
+    } catch (error) {
+        showMessage(chunksOutput, error.message, true);
+    }
 }
 
 
-async function deleteFile(fileHash) {
-    const confirmed = confirm("Vuoi eliminare questo documento dal Vector DB?");
+async function deleteFile(fileHash, fileName) {
+    const uploadResult = document.getElementById("uploadResult");
+    const chunksOutput = document.getElementById("chunksOutput");
+
+    if (!fileHash) {
+        if (uploadResult) {
+            showMessage(uploadResult, "Hash del file mancante.", true);
+        }
+        return;
+    }
+
+    const confirmed = confirm(
+        `Vuoi eliminare "${fileName || "questo documento"}" dal Vector DB?`
+    );
 
     if (!confirmed) return;
 
-    const res = await fetch(`/files?file_hash=${encodeURIComponent(fileHash)}`, {
-        method: "DELETE"
-    });
+    try {
+        const data = await apiRequest(
+            `/files?file_hash=${encodeURIComponent(fileHash)}`,
+            {
+                method: "DELETE"
+            }
+        );
 
-    const data = await res.json();
+        if (uploadResult) {
+            showJson(uploadResult, data);
+        }
 
-    document.getElementById("uploadResult").textContent =
-        JSON.stringify(data, null, 2);
+        if (chunksOutput) {
+            chunksOutput.textContent = "Seleziona “Vedi chunk” da un documento.";
+        }
 
-    await loadFiles();
-
-    document.getElementById("chunksOutput").textContent =
-        "Seleziona “Vedi chunk” da un documento.";
+        await loadFiles();
+    } catch (error) {
+        if (uploadResult) {
+            showMessage(uploadResult, error.message, true);
+        }
+    }
 }
 
 
-loadFiles();
+function showJson(element, data) {
+    element.textContent = JSON.stringify(data, null, 2);
+    element.classList.remove("error");
+}
+
+
+function showMessage(element, message, isError = false) {
+    element.textContent = message;
+
+    if (isError) {
+        element.classList.add("error");
+    } else {
+        element.classList.remove("error");
+    }
+}
+
+
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}

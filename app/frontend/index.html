@@ -2,43 +2,56 @@
 <html lang="it">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>TheRAG</title>
+
         <link rel="stylesheet" href="/static/css/style.css">
     </head>
-
     <body>
         <main class="container">
-            <header>
+            <header class="header">
                 <h1>TheRAG</h1>
                 <p>RAG pratico + inspector teorico</p>
             </header>
 
             <section class="card">
                 <h2>Carica documento</h2>
-                <input type="file" id="fileInput">
-                <button onclick="uploadFile()">Embed</button>
+
+                <input type="file" id="fileInput" accept=".pdf,.txt,.docx">
+                <button type="button" id="uploadButton">Embed</button>
+
                 <pre id="uploadResult"></pre>
             </section>
 
             <section class="card">
                 <h2>Documenti nel Vector DB</h2>
-                <button onclick="loadFiles()">Aggiorna lista</button>
+
+                <button type="button" id="refreshFilesButton">Aggiorna lista</button>
+
                 <div id="filesList"></div>
             </section>
 
             <section class="card">
-                <h2>Chunks documento</h2>
+                <h2>Chunk documento</h2>
+
                 <pre id="chunksOutput">Seleziona “Vedi chunk” da un documento.</pre>
             </section>
 
             <section class="card">
                 <h2>Fai una domanda</h2>
-                <textarea id="queryInput" placeholder="Scrivi una domanda sui documenti..."></textarea>
-                <button onclick="askQuestion()">Chiedi</button>
+
+                <textarea
+                    id="queryInput"
+                    placeholder="Scrivi una domanda sui documenti caricati..."
+                    rows="5"
+                ></textarea>
+
+                <button type="button" id="queryButton">Chiedi</button>
             </section>
 
             <section class="card">
                 <h2>Risposta</h2>
+
                 <pre id="answer"></pre>
             </section>
         </main>
