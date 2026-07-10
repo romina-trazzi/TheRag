@@ -246,3 +246,193 @@ pre {
     background: #1d4ed8;
 }
 
+/* =========================
+   EMBEDDING PAGE
+   ========================= */
+
+.files-box {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    padding: 20px;
+    border: 1px solid #e2e7ef;
+    border-radius: 12px;
+
+    background-color: #f8fafc;
+}
+
+.file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-name {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #202939;
+    overflow-wrap: anywhere;
+}
+
+.file-metadata {
+    display: grid;
+    grid-template-columns: minmax(280px, 2fr) minmax(90px, 0.5fr) minmax(170px, 1fr);
+    gap: 20px;
+}
+
+.metadata-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.metadata-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #667085;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.metadata-item code {
+    display: block;
+    max-width: 100%;
+    padding: 6px 8px;
+
+    font-size: 12px;
+    line-height: 1.4;
+
+    color: #344054;
+    background-color: #eef2f7;
+    border-radius: 6px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.file-actions button {
+    min-width: 110px;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.chunks-button {
+    color: white;
+    background-color: #4263eb;
+}
+
+.chunks-button:hover {
+    background-color: #364fc7;
+}
+
+.delete-button,
+.danger-button {
+    color: white;
+    background-color: #c92a2a;
+}
+
+.delete-button:hover,
+.danger-button:hover {
+    background-color: #a51111;
+}
+
+.chunks-box {
+    margin-top: 18px;
+}
+
+.chunk-item {
+    margin-bottom: 16px;
+    padding: 18px;
+
+    border: 1px solid #e2e7ef;
+    border-radius: 10px;
+    background-color: #f8fafc;
+}
+
+.chunk-item h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: #344054;
+}
+
+.chunk-item pre {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.65;
+    color: #344054;
+}
+
+.status-box {
+    margin-top: 16px;
+    min-height: 24px;
+}
+
+.muted {
+    color: #667085;
+}
+
+.hidden {
+    display: none;
+}
+
+#closeChunksButton {
+    align-self: flex-start;
+}
+
+#selectedDocument {
+    margin: 6px 0 0;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+    .file-item {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .file-metadata {
+        grid-template-columns: 1fr;
+    }
+
+    .file-actions {
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 520px) {
+    .file-actions {
+        flex-direction: column;
+    }
+
+    .file-actions button {
+        width: 100%;
+    }
+}

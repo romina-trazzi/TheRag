@@ -1,39 +1,68 @@
-const questionInput = document.getElementById("questionInput");
-const askButton = document.getElementById("askButton");
-const answerBox = document.getElementById("answerBox");
-const sourcesBox = document.getElementById("sourcesBox");
-const loadingMessage = document.getElementById("loadingMessage");
-
 document.addEventListener("DOMContentLoaded", () => {
-    const queryButton = document.getElementById("queryButton");
+    const askButton = document.getElementById("askButton");
+    const questionInput = document.getElementById("questionInput");
 
-    if (queryButton) {
-        queryButton.addEventListener("click", askQuestion);
+    if (askButton) {
+        askButton.addEventListener("click", askQuestion);
+    }
+
+    if (questionInput) {
+        questionInput.addEventListener("keydown", event => {
+            if (event.key === "Enter" && event.ctrlKey) {
+                event.preventDefault();
+                askQuestion();
+            }
+        });
     }
 });
 
 
 async function askQuestion() {
-    const queryInput = document.getElementById("queryInput");
-    const answerOutput = document.getElementById("answer");
+    const questionInput = document.getElementById("questionInput");
+    const answerBox = document.getElementById("answerBox");
+    const sourcesBox = document.getElementById("sourcesBox");
+    const loadingMessage = document.getElementById("loadingMessage");
+    const askButton = document.getElementById("askButton");
 
-    if (!queryInput || !answerOutput) return;
+    if (
+        !questionInput ||
+        !answerBox ||
+        !sourcesBox ||
+        !loadingMessage ||
+        !askButton
+    ) {
+        console.error("Uno o più elementi della pagina RAG non sono stati trovati.");
+        return;
+    }
 
-    const query = queryInput.value.trim();
+    const query = questionInput.value.trim();
 
     if (!query) {
-        showMessage(answerOutput, "Scrivi una domanda prima di inviare.", true);
+        showMessage(
+            answerBox,
+            "Scrivi una domanda prima di inviare.",
+            true
+        );
         return;
     }
 
     if (query.length < 3) {
-        showMessage(answerOutput, "La domanda è troppo corta.", true);
+        showMessage(
+            answerBox,
+            "La domanda è troppo corta.",
+            true
+        );
         return;
     }
 
-    try {
-        showMessage(answerOutput, "Sto generando la risposta...");
+    answerBox.innerHTML = "";
+    sourcesBox.innerHTML = "";
 
+    loadingMessage.classList.remove("hidden");
+    askButton.disabled = true;
+    askButton.textContent = "Attendi...";
+
+    try {
         const data = await apiRequest("/query", {
             method: "POST",
             headers: {
@@ -42,8 +71,126 @@ async function askQuestion() {
             body: JSON.stringify({ query })
         });
 
-        showJson(answerOutput, data);
+        renderAnswer(data.answer);
+        renderSources(data.sources || []);
     } catch (error) {
-        showMessage(answerOutput, error.message, true);
+        console.error("Errore durante la query:", error);
+
+        showMessage(
+            answerBox,
+            error.message || "Errore durante la generazione della risposta.",
+            true
+        );
+    } finally {
+        loadingMessage.classList.add("hidden");
+        askButton.disabled = false;
+        askButton.textContent = "Chiedi";
     }
+}
+
+
+function renderAnswer(answer) {
+    const answerBox = document.getElementById("answerBox");
+
+    if (!answerBox) return;
+
+    if (!answer) {
+        showMessage(
+            answerBox,
+            "Il modello non ha restituito una risposta.",
+            true
+        );
+        return;
+    }
+
+    answerBox.textContent = answer;
+    answerBox.classList.remove("error");
+}
+
+
+function renderSources(sources) {
+    const sourcesBox = document.getElementById("sourcesBox");
+
+    if (!sourcesBox) return;
+
+    sourcesBox.innerHTML = "";
+
+    if (!sources.length) {
+        sourcesBox.innerHTML = `
+            <p class="muted">
+                Nessuna fonte disponibile.
+            </p>
+        `;
+        return;
+    }
+
+    sources.forEach((source, index) => {
+        const sourceItem = document.createElement("article");
+        sourceItem.className = "source-item";
+
+        sourceItem.innerHTML = createSourceHtml(source, index);
+
+        sourcesBox.appendChild(sourceItem);
+    });
+}
+
+
+function createSourceHtml(source, index) {
+    /*
+     * Gestisce sia fonti stringa sia oggetti.
+     * Potremo precisarlo quando vedremo la struttura
+     * effettivamente restituita da query.py.
+     */
+
+    if (typeof source === "string") {
+        return `
+            <h3>Fonte ${index + 1}</h3>
+            <p>${escapeHtml(source)}</p>
+        `;
+    }
+
+    const fileName =
+        source.file_name ||
+        source.source ||
+        source.filename ||
+        "Fonte senza nome";
+
+    const content =
+        source.content ||
+        source.text ||
+        source.document ||
+        source.chunk ||
+        "";
+
+    const score =
+        source.score ??
+        source.distance ??
+        null;
+
+    return `
+        <h3>
+            ${escapeHtml(fileName)}
+        </h3>
+
+        ${
+            score !== null
+                ? `
+                    <p class="source-score">
+                        <strong>Score:</strong>
+                        ${escapeHtml(score)}
+                    </p>
+                `
+                : ""
+        }
+
+        ${
+            content
+                ? `
+                    <p class="source-content">
+                        ${escapeHtml(content)}
+                    </p>
+                `
+                : ""
+        }
+    `;
 }
