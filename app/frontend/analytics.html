@@ -3,59 +3,210 @@
     <head>
         <meta charset="UTF-8">
         <title>RAG - Analytics</title>
+
         <link rel="stylesheet" href="/static/css/style.css">
+
+        <!-- Libreria Plotly per i grafici 2D e 3D -->
+        <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
     </head>
+
     <body>
 
-    <nav class="navbar">
-        <div class="navbar-brand">Mini RAG</div>
+        <nav class="navbar">
+            <div class="navbar-brand">THE RAG</div>
 
-        <div class="navbar-links">
-            <a href="/">RAG</a>
-            <a href="/embedding-page">Embedding</a>
-            <a href="/analytics-page">Analytics</a>
-        </div>
-    </nav>
-
-    <main class="page-container">
-
-        <section class="page-header">
-            <h1>Analytics</h1>
-            <p>Analisi futura del vector database e degli embedding.</p>
-        </section>
-
-        <section class="stats-grid">
-            <div class="stat-card">
-                <h2 id="documentsCount">-</h2>
-                <p>Documenti</p>
+            <div class="navbar-links">
+                <a href="/">RAG</a>
+                <a href="/embedding-page">Embedding</a>
+                <a href="/analytics-page">Analytics</a>
             </div>
+        </nav>
 
-            <div class="stat-card">
-                <h2 id="chunksCount">-</h2>
-                <p>Chunk</p>
-            </div>
+        <main class="page-container">
 
-            <div class="stat-card">
-                <h2 id="vectorsCount">-</h2>
-                <p>Vettori</p>
-            </div>
-        </section>
+            <section class="page-header">
+                <h1>Analytics</h1>
+                <p>Esplora i vettori, i chunk e il funzionamento della ricerca semantica.</p>
+            </section>
 
-        <section class="card">
-            <h2>Visualizzazioni future</h2>
+            <!-- Controlli del grafico -->
+            <section class="card">
+                <div class="section-title-row">
+                    <div>
+                        <h2>Spazio vettoriale</h2>
+                        <p class="muted">
+                            Ogni punto rappresenta un chunk della knowledge base.
+                        </p>
+                    </div>
 
-            <ul class="analytics-list">
-                <li>PCA 2D / 3D degli embedding</li>
-                <li>t-SNE</li>
-                <li>UMAP</li>
-                <li>Distribuzione dei chunk per documento</li>
-                <li>Documenti più interrogati</li>
-            </ul>
-        </section>
+                    <button
+                        id="refreshAnalyticsButton"
+                        class="secondary-button"
+                        type="button"
+                    >
+                        Aggiorna
+                    </button>
+                </div>
 
-    </main>
+                <div class="analytics-controls">
 
-    <script src="/static/js/common.js"></script>
-    <script src="/static/js/analytics.js"></script>
+                    <label for="dimensionSelect">
+                        Visualizzazione
+                    </label>
+
+                    <select id="dimensionSelect">
+                        <option value="2d">2D</option>
+                        <option value="3d">3D</option>
+                    </select>
+
+                    <label for="documentFilter">
+                        Documento
+                    </label>
+
+                    <select id="documentFilter">
+                        <option value="all">Tutti i documenti</option>
+                    </select>
+
+                </div>
+            </section>
+
+            <!-- Grafico Plotly -->
+            <section class="card">
+                <h2>Grafico dei vettori</h2>
+
+                <div id="analyticsLoadingMessage" class="hidden">
+                    Caricamento dei vettori...
+                </div>
+
+                <div id="vectorPlot" class="vector-plot">
+                    <p class="muted">
+                        Il grafico comparirà qui.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Legenda -->
+            <section class="card">
+                <h2>Legenda</h2>
+
+                <div class="analytics-legend">
+                    <div>
+                        <span class="legend-marker"></span>
+                        Chunk della knowledge base
+                    </div>
+
+                    <div>
+                        <span class="legend-marker retrieved-marker"></span>
+                        Chunk recuperati dalla query
+                    </div>
+
+                    <div>
+                        <span class="legend-marker query-marker"></span>
+                        Query dell’utente
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dettagli del chunk selezionato -->
+            <section class="card">
+                <div class="section-title-row">
+                    <div>
+                        <h2>Chunk selezionato</h2>
+                        <p id="selectedChunkMessage" class="muted">
+                            Seleziona un punto nel grafico per vedere i suoi dettagli.
+                        </p>
+                    </div>
+
+                    <button
+                        id="closeChunkDetailsButton"
+                        class="secondary-button hidden"
+                        type="button"
+                    >
+                        Chiudi
+                    </button>
+                </div>
+
+                <div id="selectedChunkBox" class="selected-chunk-box"></div>
+            </section>
+
+            <!-- Vettore numerico -->
+            <section class="card">
+                <h2>Vettore numerico</h2>
+
+                <p class="muted">
+                    Qui verranno mostrate le dimensioni originali dell’embedding
+                    del chunk selezionato.
+                </p>
+
+                <div id="numericVectorBox" class="numeric-vector-box">
+                    <p class="muted">
+                        Nessun vettore selezionato.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Ultima query RAG -->
+            <section class="card">
+                <h2>Ultima query RAG</h2>
+
+                <p class="muted">
+                    Questa sezione mostrerà l’ultima domanda eseguita nella pagina RAG.
+                </p>
+
+                <div id="lastQueryBox" class="last-query-box">
+                    <p class="muted">
+                        Nessuna query disponibile.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Chunk recuperati -->
+            <section class="card">
+                <h2>Chunk recuperati</h2>
+
+                <p class="muted">
+                    I chunk più vicini all’ultima query verranno mostrati ed evidenziati
+                    nel grafico.
+                </p>
+
+                <div id="retrievedChunksBox" class="retrieved-chunks-box">
+                    <p class="muted">
+                        Nessun chunk recuperato.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Diagnostica -->
+            <section class="card">
+                <h2>Diagnostica del retrieval</h2>
+
+                <div id="retrievalDiagnosticsBox" class="diagnostics-box">
+                    <p class="muted">
+                        Le statistiche sulla ricerca compariranno dopo una query.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Prompt finale -->
+            <section class="card">
+                <h2>Prompt finale</h2>
+
+                <p class="muted">
+                    Qui verranno mostrati il contesto recuperato e la domanda
+                    inviati al modello.
+                </p>
+
+                <div id="promptInspectorBox" class="prompt-inspector-box">
+                    <p class="muted">
+                        Nessun prompt disponibile.
+                    </p>
+                </div>
+            </section>
+
+        </main>
+
+        <script src="/static/js/common.js"></script>
+        <script src="/static/js/analytics.js"></script>
+
     </body>
 </html>

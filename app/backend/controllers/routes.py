@@ -55,7 +55,7 @@ def route_embed():
         "error": "Caricamento del file non riuscito"
     }), 400
 
-# Route per la query dell'utente
+# Route per eseguire la query dell'utente
 @router.route("/query", methods=["POST"])
 def route_query():
     data = request.get_json()
@@ -83,6 +83,24 @@ def route_files():
         "files": files
     }), 200
 
+# Route per ottenere la lista dei chunk di un file specifico tramite il suo hash
+@router.route("/chunks", methods=["GET"])
+def route_chunks():
+    file_hash = request.args.get("file_hash")
+
+    if not file_hash:
+        return jsonify({
+            "error": "Parametro file_hash mancante"
+        }), 400
+
+    chunks = list_chunks_by_file_hash(file_hash)
+
+    return jsonify({
+        "file_hash": file_hash,
+        "chunks_count": len(chunks),
+        "chunks": chunks
+    }), 200
+
 # Route per cancellare un file specifico tramite il suo hash
 @router.route("/files", methods=["DELETE"])
 def route_delete_file():
@@ -104,24 +122,6 @@ def route_delete_file():
     return jsonify({
         "error": "Impossibile eliminare il documento."
     }), 400
-
-# Route per ottenere la lista dei chunk di un file specifico tramite il suo hash
-@router.route("/chunks", methods=["GET"])
-def route_chunks():
-    file_hash = request.args.get("file_hash")
-
-    if not file_hash:
-        return jsonify({
-            "error": "Parametro file_hash mancante"
-        }), 400
-
-    chunks = list_chunks_by_file_hash(file_hash)
-
-    return jsonify({
-        "file_hash": file_hash,
-        "chunks_count": len(chunks),
-        "chunks": chunks
-    }), 200
 
 
 
