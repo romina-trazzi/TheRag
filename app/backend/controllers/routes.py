@@ -1,7 +1,11 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 
 from app.backend.services.query import query
-from app.backend.services.embed import embed, save_file, list_uploaded_files, list_chunks_by_file_hash, delete_file_by_hash
+from app.backend.services.embed import *
+from app.backend.db.vector_db import get_all_vectors
+
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 
 router = Blueprint("router", __name__)
 
@@ -123,5 +127,45 @@ def route_delete_file():
         "error": "Impossibile eliminare il documento."
     }), 400
 
+# Route per trasformare i vettori in un formato JSON-friendly e restituirli al frontend
+@router.route("/analytics/vectors", methods=["GET"])
+def analytics_vectors():
+    data = get_all_vectors()
 
+    embeddings = data["embeddings"]
 
+    if embeddings is None or len(embeddings) == 0:
+        return jsonify({
+            "count": 0,
+            "vectors": []
+        })
+
+    # PCA: trasforma i vettori originali in coordinate 3D.
+    # Le prime due coordinate verranno usate anche per il grafico 2D.
+    pca = PCA(n_components=3)
+    coordinates = pca.fit_transform(embeddings)
+
+    vectors = []
+
+    for i in range(len(data["ids"])):
+        embedding = embeddings[i]
+
+        if hasattr(embedding, "tolist"):
+            embedding = embedding.tolist()
+
+        vectors.append({
+            "id": data["ids"][i],
+            "document": data["documents"][i],
+            "metadata": data["metadatas"][i],
+            "embedding": embedding,
+
+            "x": float(coordinates[i][0]),
+            "y": float(coordinates[i][1]),
+            "z": float(coordinates[i][2])
+        })
+
+    return jsonify({
+        "count": len(vectors),
+        "embedding_dimension": len(embeddings[0]),
+        "vectors": vectors
+    })
