@@ -1,3 +1,4 @@
+// Funzione asincrona per inviare richieste API al backend
 async function apiRequest(url, options = {}) {
     try {
         const response = await fetch(url, options);
@@ -22,13 +23,13 @@ async function apiRequest(url, options = {}) {
     }
 }
 
-
+// Funzione per mostrare i dati JSON in un elemento HTML
 function showJson(element, data) {
     element.textContent = JSON.stringify(data, null, 2);
     element.classList.remove("error");
 }
 
-
+// Funzione per mostrare un messaggio in un elemento HTML
 function showMessage(element, message, isError = false) {
     element.textContent = message;
 
@@ -40,6 +41,7 @@ function showMessage(element, message, isError = false) {
 }
 
 
+// Funzione per caratteri di escape HTML 
 function escapeHtml(value) {
     return String(value)
         .replaceAll("&", "&amp;")
@@ -48,3 +50,25 @@ function escapeHtml(value) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
 }
+
+// Funzione per formattare al meglio la data
+function formatDate(dateString) {
+    if (!dateString) {
+        return "n/d";
+    }
+
+    const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+        return dateString;
+    }
+
+    return date.toLocaleString("it-IT", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+

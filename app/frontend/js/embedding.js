@@ -1,3 +1,5 @@
+
+// Inizializza gli eventi al caricamento del DOM
 document.addEventListener("DOMContentLoaded", () => {
     const uploadButton = document.getElementById("uploadButton");
     const refreshFilesButton = document.getElementById("refreshFilesButton");
@@ -19,6 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+/* FUNZIONI LEGATE AI FILES */
+
+// Funzione per caricare un file e inviarlo al backend per l'embedding
 async function uploadFile() {
     const fileInput = document.getElementById("fileInput");
     const uploadStatus = document.getElementById("uploadStatus");
@@ -88,6 +93,7 @@ async function uploadFile() {
     }
 }
 
+// Funzione per caricare la lista dei file dal backend
 async function loadFiles() {
     const filesBox = document.getElementById("filesBox");
 
@@ -111,6 +117,7 @@ async function loadFiles() {
     }
 }
 
+// Funzione per inviare una query al backend e ottenere una risposta
 function renderFiles(files) {
     const filesBox = document.getElementById("filesBox");
 
@@ -183,84 +190,7 @@ function renderFiles(files) {
     });
 }
 
-async function loadChunks(fileHash, fileName) {
-    const chunksBox = document.getElementById("chunksBox");
-    const selectedDocument = document.getElementById("selectedDocument");
-    const closeChunksButton = document.getElementById("closeChunksButton");
-
-    if (!chunksBox) {
-        console.error("Elemento chunksBox non trovato.");
-        return;
-    }
-
-    if (!fileHash) {
-        showMessage(
-            chunksBox,
-            "Hash del file mancante.",
-            true
-        );
-        return;
-    }
-
-    if (selectedDocument) {
-        selectedDocument.textContent =
-            `Documento selezionato: ${fileName || "Senza nome"}`;
-    }
-
-    if (closeChunksButton) {
-        closeChunksButton.classList.remove("hidden");
-    }
-
-    try {
-        showMessage(chunksBox, "Caricamento chunk...");
-
-        const data = await apiRequest(
-            `/chunks?file_hash=${encodeURIComponent(fileHash)}`
-        );
-
-        renderChunks(data.chunks || []);
-    } catch (error) {
-        console.error("Errore durante il caricamento dei chunk:", error);
-
-        showMessage(
-            chunksBox,
-            error.message,
-            true
-        );
-    }
-}
-
-function renderChunks(chunks) {
-    const chunksBox = document.getElementById("chunksBox");
-
-    if (!chunksBox) return;
-
-    chunksBox.innerHTML = "";
-
-    if (!chunks.length) {
-        chunksBox.innerHTML = "<p>Nessun chunk trovato.</p>";
-        return;
-    }
-
-    chunks.forEach((chunk, index) => {
-        const chunkItem = document.createElement("div");
-        chunkItem.className = "chunk-item";
-
-        const chunkText =
-            chunk.text ||
-            chunk.document ||
-            chunk.content ||
-            JSON.stringify(chunk, null, 2);
-
-        chunkItem.innerHTML = `
-            <h3>Chunk ${index + 1}</h3>
-            <pre>${escapeHtml(chunkText)}</pre>
-        `;
-
-        chunksBox.appendChild(chunkItem);
-    });
-}
-
+// Funzione per eliminare un file dal backend
 async function deleteFile(fileHash, fileName) {
     const uploadStatus = document.getElementById("uploadStatus");
 
@@ -311,30 +241,94 @@ async function deleteFile(fileHash, fileName) {
             );
         }
     }
-
-    
 }
 
-function formatDate(dateString) {
-    if (!dateString) {
-        return "n/d";
+
+
+/* FUNZIONI LEGATE AI CHUNKS */
+
+// Funzione per caricare i chunk di un file dal backend
+async function loadChunks(fileHash, fileName) {
+    const chunksBox = document.getElementById("chunksBox");
+    const selectedDocument = document.getElementById("selectedDocument");
+    const closeChunksButton = document.getElementById("closeChunksButton");
+
+    if (!chunksBox) {
+        console.error("Elemento chunksBox non trovato.");
+        return;
     }
 
-    const date = new Date(dateString);
-
-    if (Number.isNaN(date.getTime())) {
-        return dateString;
+    if (!fileHash) {
+        showMessage(
+            chunksBox,
+            "Hash del file mancante.",
+            true
+        );
+        return;
     }
 
-    return date.toLocaleString("it-IT", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
+    if (selectedDocument) {
+        selectedDocument.textContent =
+            `Documento selezionato: ${fileName || "Senza nome"}`;
+    }
+
+    if (closeChunksButton) {
+        closeChunksButton.classList.remove("hidden");
+    }
+
+    try {
+        showMessage(chunksBox, "Caricamento chunk...");
+
+        const data = await apiRequest(
+            `/chunks?file_hash=${encodeURIComponent(fileHash)}`
+        );
+
+        renderChunks(data.chunks || []);
+    
+    } catch (error) {
+        console.error("Errore durante il caricamento dei chunk:", error);
+
+        showMessage(
+            chunksBox,
+            error.message,
+            true
+        );
+    }
+}
+
+// Funzione per renderizzare i chunk nella UI
+function renderChunks(chunks) {
+    const chunksBox = document.getElementById("chunksBox");
+
+    if (!chunksBox) return;
+
+    chunksBox.innerHTML = "";
+
+    if (!chunks.length) {
+        chunksBox.innerHTML = "<p>Nessun chunk trovato.</p>";
+        return;
+    }
+
+    chunks.forEach((chunk, index) => {
+        const chunkItem = document.createElement("div");
+        chunkItem.className = "chunk-item";
+
+        const chunkText =
+            chunk.text ||
+            chunk.document ||
+            chunk.content ||
+            JSON.stringify(chunk, null, 2);
+
+        chunkItem.innerHTML = `
+            <h3>Chunk ${index + 1}</h3>
+            <pre>${escapeHtml(chunkText)}</pre>
+        `;
+
+        chunksBox.appendChild(chunkItem);
     });
 }
 
+// Funzione per chiudere la visualizzazione dei chunk
 function closeChunks() {
     const chunksBox = document.getElementById("chunksBox");
     const selectedDocument = document.getElementById("selectedDocument");
@@ -353,3 +347,5 @@ function closeChunks() {
         closeChunksButton.classList.add("hidden");
     }
 }
+
+

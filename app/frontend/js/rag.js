@@ -1,68 +1,45 @@
+// Inizializza gli eventi al caricamento del DOM 
 document.addEventListener("DOMContentLoaded", () => {
-    const askButton = document.getElementById("askButton");
-    const questionInput = document.getElementById("questionInput");
-
-    if (askButton) {
-        askButton.addEventListener("click", askQuestion);
-    }
-
-    if (questionInput) {
-        questionInput.addEventListener("keydown", event => {
-            if (event.key === "Enter" && event.ctrlKey) {
-                event.preventDefault();
-                askQuestion();
-            }
-        });
-    }
+    bindEvents();
 });
 
 
-async function askQuestion() {
-    const questionInput = document.getElementById("questionInput");
-    const answerBox = document.getElementById("answerBox");
-    const sourcesBox = document.getElementById("sourcesBox");
-    const loadingMessage = document.getElementById("loadingMessage");
-    const askButton = document.getElementById("askButton");
+// Funzione per legare un evento a un button
+function bindEvents() {
 
-    if (
-        !questionInput ||
-        !answerBox ||
-        !sourcesBox ||
-        !loadingMessage ||
-        !askButton
-    ) {
-        console.error("Uno o più elementi della pagina RAG non sono stati trovati.");
-        return;
+    const queryButton = document.getElementById("queryButton");
+
+    if (queryButton) {
+        queryButton.addEventListener("click", askQuestion);
     }
+}
 
-    const query = questionInput.value.trim();
+// Funzione per inviare la domanda dell'utente al backend e visualizzare la risposta
+async function askQuestion() {
 
+    // Selezione degli elementi HTML per ottenere la domanda e visualizzare la risposta
+    const queryInput = document.getElementById("queryInput");
+    const answerOutput = document.getElementById("answer");
+
+    if (!queryInput || !answerOutput) return;
+
+    const query = queryInput.value.trim();
+
+    // Se la query ha problemi
     if (!query) {
-        showMessage(
-            answerBox,
-            "Scrivi una domanda prima di inviare.",
-            true
-        );
+        showMessage(answerOutput, "Scrivi una domanda prima di inviare.", true);
         return;
     }
 
     if (query.length < 3) {
-        showMessage(
-            answerBox,
-            "La domanda è troppo corta.",
-            true
-        );
+        showMessage(answerOutput, "La domanda è troppo corta.", true);
         return;
     }
 
-    answerBox.innerHTML = "";
-    sourcesBox.innerHTML = "";
-
-    loadingMessage.classList.remove("hidden");
-    askButton.disabled = true;
-    askButton.textContent = "Attendi...";
-
+    // Mostra un messaggio di caricamento mentre si attende la risposta
     try {
+        showMessage(answerOutput, "Sto generando la risposta...");
+
         const data = await apiRequest("/query", {
             method: "POST",
             headers: {
@@ -71,126 +48,11 @@ async function askQuestion() {
             body: JSON.stringify({ query })
         });
 
-        renderAnswer(data.answer);
-        renderSources(data.sources || []);
+        showJson(answerOutput, data);
+
     } catch (error) {
-        console.error("Errore durante la query:", error);
-
-        showMessage(
-            answerBox,
-            error.message || "Errore durante la generazione della risposta.",
-            true
-        );
-    } finally {
-        loadingMessage.classList.add("hidden");
-        askButton.disabled = false;
-        askButton.textContent = "Chiedi";
+        
+        showMessage(answerOutput, error.message, true);
     }
 }
 
-
-function renderAnswer(answer) {
-    const answerBox = document.getElementById("answerBox");
-
-    if (!answerBox) return;
-
-    if (!answer) {
-        showMessage(
-            answerBox,
-            "Il modello non ha restituito una risposta.",
-            true
-        );
-        return;
-    }
-
-    answerBox.textContent = answer;
-    answerBox.classList.remove("error");
-}
-
-
-function renderSources(sources) {
-    const sourcesBox = document.getElementById("sourcesBox");
-
-    if (!sourcesBox) return;
-
-    sourcesBox.innerHTML = "";
-
-    if (!sources.length) {
-        sourcesBox.innerHTML = `
-            <p class="muted">
-                Nessuna fonte disponibile.
-            </p>
-        `;
-        return;
-    }
-
-    sources.forEach((source, index) => {
-        const sourceItem = document.createElement("article");
-        sourceItem.className = "source-item";
-
-        sourceItem.innerHTML = createSourceHtml(source, index);
-
-        sourcesBox.appendChild(sourceItem);
-    });
-}
-
-
-function createSourceHtml(source, index) {
-    /*
-     * Gestisce sia fonti stringa sia oggetti.
-     * Potremo precisarlo quando vedremo la struttura
-     * effettivamente restituita da query.py.
-     */
-
-    if (typeof source === "string") {
-        return `
-            <h3>Fonte ${index + 1}</h3>
-            <p>${escapeHtml(source)}</p>
-        `;
-    }
-
-    const fileName =
-        source.file_name ||
-        source.source ||
-        source.filename ||
-        "Fonte senza nome";
-
-    const content =
-        source.content ||
-        source.text ||
-        source.document ||
-        source.chunk ||
-        "";
-
-    const score =
-        source.score ??
-        source.distance ??
-        null;
-
-    return `
-        <h3>
-            ${escapeHtml(fileName)}
-        </h3>
-
-        ${
-            score !== null
-                ? `
-                    <p class="source-score">
-                        <strong>Score:</strong>
-                        ${escapeHtml(score)}
-                    </p>
-                `
-                : ""
-        }
-
-        ${
-            content
-                ? `
-                    <p class="source-content">
-                        ${escapeHtml(content)}
-                    </p>
-                `
-                : ""
-        }
-    `;
-}

@@ -6,6 +6,14 @@ from app.backend.db.vector_db import get_vector_db
 # Chiamare la funzione da get_vector_db.py per ottenere l'oggetto DB
 db = get_vector_db()
 
+# Variabile globale temporanea per salvare l'ultima query eseguita in memoria (non è persistente al riavvio di Flask sparisce).
+last_query_log = None
+
+
+# Funzione per recuperare l'ultima query da Analytics
+def get_last_query_log():
+    return last_query_log
+
 # Funzione di Initial prompt (= template prompt con blocchi di contesto e domanda)
 def get_prompt():
     template = """Rispondi alla domanda SOLO usando il contesto fornito.
@@ -26,7 +34,7 @@ def get_prompt():
 
 # Funzione per la query dell'utente al RAG model
 def query(input_text):
-
+    
     # Controllo se l'input è vuoto
     if not input_text:
         return None
@@ -90,9 +98,36 @@ def query(input_text):
         doc.metadata.get("file_name", doc.metadata.get("source", "sconosciuto"))
         for doc in docs
     ))
+    
 
-    # Fase 8: Risposta finale restituita alla route /query.
+    # Fase 8: Prepariamo i chunk recuperati in formato leggibile per Analytics.
+    retrieved_chunks = []
+
+    for i, doc in enumerate(docs):
+        retrieved_chunks.append({
+            "rank": i + 1,
+            "file_name": doc.metadata.get("file_name", doc.metadata.get("source", "sconosciuto")),
+            "chunk_index": doc.metadata.get("chunk_index", "n/d"),
+            "text": doc.page_content,
+            "preview": doc.page_content[:300],
+            "metadata": doc.metadata
+        })
+
+    # Fase 9: Salvataggio dell'ultima query per la pagina Analytics.
+    last_query_log = {
+        "query": input_text,
+        "answer": str(response),
+        "sources": sources,
+        "chunks": retrieved_chunks,
+        "context": context
+    }
+
+    # Fase 10: Risposta finale restituita alla route /query.
     return {
         "answer": str(response),
         "sources": sources
     }
+
+
+    
+
